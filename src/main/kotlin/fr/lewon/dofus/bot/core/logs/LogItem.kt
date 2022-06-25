@@ -3,23 +3,21 @@ package fr.lewon.dofus.bot.core.logs
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.atomic.AtomicLong
 
-class LogItem(var message: String, val description: String = "", subItemCapacity: Int) {
+class LogItem(val parent: LogItem?, var message: String, val description: String = "", subItemCapacity: Int) {
 
     companion object {
         private val ID_GENERATOR = AtomicLong(0)
     }
 
     val id = ID_GENERATOR.incrementAndGet()
-    
-    private val subLogs = ArrayBlockingQueue<LogItem>(subItemCapacity)
-    private var closeMessage: String? = null
 
-    fun addSubItem(logItem: LogItem) {
-        synchronized(subLogs) {
-            if (!subLogs.offer(logItem)) {
-                subLogs.poll()
-                subLogs.offer(logItem)
-            }
+    val subLogs = ArrayBlockingQueue<LogItem>(subItemCapacity)
+    var closeMessage: String? = null
+
+    fun getRootLogItem(): LogItem {
+        var parent = this
+        while (true) {
+            parent = parent.parent ?: return parent
         }
     }
 
@@ -46,11 +44,4 @@ class LogItem(var message: String, val description: String = "", subItemCapacity
         return ret
     }
 
-    fun clearSubLogs() {
-        subLogs.clear()
-    }
-
-    fun closeLog(message: String) {
-        closeMessage = message
-    }
 }

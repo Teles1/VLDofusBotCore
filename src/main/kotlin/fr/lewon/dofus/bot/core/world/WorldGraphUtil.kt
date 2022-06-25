@@ -104,11 +104,10 @@ object WorldGraphUtil {
     }
 
     private fun buildNodes(parentNode: Node, edge: Edge, characterInfo: DofusCharacterBasicInfo): List<Node> {
-        return getEdgeTransitions(edge, characterInfo).map { Node(parentNode, edge.to, it) }
-    }
-
-    private fun getEdgeTransitions(edge: Edge, characterInfo: DofusCharacterBasicInfo): List<Transition> {
-        return edge.transitions.filter { isTransitionValid(it, characterInfo) }
+        return edge.transitions
+            .filter { isTransitionValid(it, characterInfo) }
+            .sortedBy { it.type.typeInt }
+            .map { Node(parentNode, edge.to, it) }
     }
 
     private fun isTransitionValid(transition: Transition, characterInfo: DofusCharacterBasicInfo): Boolean {
@@ -138,6 +137,10 @@ object WorldGraphUtil {
 
     fun getOutgoingEdges(vertex: Vertex): List<Edge> {
         return outgoingEdges[vertex.uid] ?: return emptyList()
+    }
+
+    fun addTransition(fromVertex: Vertex, toVertex: Vertex, transition: Transition) {
+        val edge = getEdge(fromVertex, toVertex)
     }
 
     private class Node(val parent: Node?, val vertex: Vertex, val transition: Transition?) {

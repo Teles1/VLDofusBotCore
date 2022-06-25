@@ -35,6 +35,10 @@ object MapManager : VldbManager {
         return value?.toString() ?: error("invalid map value for [$key] : $value")
     }
 
+    fun getAllDofusMaps(): List<DofusMap> {
+        return mapById.values.toList()
+    }
+
     fun getDofusMap(id: Double): DofusMap {
         return mapById[id] ?: error("No map found for id [$id]")
     }

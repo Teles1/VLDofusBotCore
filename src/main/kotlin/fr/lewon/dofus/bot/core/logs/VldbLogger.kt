@@ -1,6 +1,5 @@
 package fr.lewon.dofus.bot.core.logs
 
-import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 
 class VldbLogger(val logItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY) {
@@ -14,7 +13,7 @@ class VldbLogger(val logItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY) {
 
     private fun onLogsChange() {
         val logsCopy = getLogs()
-        listeners.forEach { it.onLogsChange(logsCopy) }
+        listeners.forEach { it.onLogsChange(this, logsCopy) }
     }
 
     fun getLogs(): List<LogItem> {
@@ -30,9 +29,9 @@ class VldbLogger(val logItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY) {
 
     fun closeLog(message: String, parent: LogItem, clearSubLogs: Boolean = false) {
         synchronized(logs) {
-            parent.closeLog(message)
+            parent.closeMessage = message
             if (clearSubLogs) {
-                parent.clearSubLogs()
+                parent.subLogs.clear()
             }
             onLogsChange()
         }
@@ -49,22 +48,39 @@ class VldbLogger(val logItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY) {
         message: String, parent: LogItem, subItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY
     ): LogItem {
         synchronized(logs) {
-            val newItem = LogItem(message, "", subItemCapacity)
-            parent.addSubItem(newItem)
+            val newItem = LogItem(parent, message, "", subItemCapacity)
+            addSubItem(parent, newItem)
+            val rootLogItem = parent.getRootLogItem()
+            if (!logs.contains(rootLogItem)) {
+                addLogItem(rootLogItem)
+            }
             onLogsChange()
             return newItem
         }
     }
 
+    private fun addSubItem(logItem: LogItem, subLogItem: LogItem) {
+        synchronized(logItem.subLogs) {
+            if (!logItem.subLogs.offer(subLogItem)) {
+                logItem.subLogs.poll()
+                logItem.subLogs.offer(subLogItem)
+            }
+        }
+    }
+
     fun log(message: String, subItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY, description: String = ""): LogItem {
         synchronized(logs) {
-            val newItem = LogItem(message, description, subItemCapacity)
-            if (!logs.offer(newItem)) {
-                logs.poll()
-                logs.offer(newItem)
-            }
+            val newItem = LogItem(null, message, description, subItemCapacity)
+            addLogItem(newItem)
             onLogsChange()
             return newItem
+        }
+    }
+
+    private fun addLogItem(logItem: LogItem) {
+        if (!logs.offer(logItem)) {
+            logs.poll()
+            logs.offer(logItem)
         }
     }
 
