@@ -2,7 +2,7 @@ package fr.lewon.dofus.bot.core.logs
 
 import java.util.concurrent.ArrayBlockingQueue
 
-class VldbLogger(val logItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY) {
+class VldbLogger(logItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY) {
 
     companion object {
         const val DEFAULT_LOG_ITEM_CAPACITY = 8
