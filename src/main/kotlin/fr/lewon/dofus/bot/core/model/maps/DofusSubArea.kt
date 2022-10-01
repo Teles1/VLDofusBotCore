@@ -13,5 +13,6 @@ data class DofusSubArea(
     val name: String,
     val area: DofusArea,
     val psiAllowed: Boolean,
-    val displayOnWorldMap: Boolean
+    val displayOnWorldMap: Boolean,
+    val level: Int
 )

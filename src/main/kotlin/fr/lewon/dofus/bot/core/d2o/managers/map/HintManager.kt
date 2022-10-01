@@ -39,7 +39,8 @@ object HintManager : VldbManager {
 
     enum class HintType(val gfx: Int) {
 
-        ZAAP(410);
+        ZAAP(410),
+        DUNGEON(422);
 
         companion object {
             fun fromGfx(gfx: Int): HintType? {

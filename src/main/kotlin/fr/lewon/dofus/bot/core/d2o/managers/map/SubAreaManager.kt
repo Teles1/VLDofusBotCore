@@ -27,9 +27,10 @@ object SubAreaManager : VldbManager {
             val monsters = monsterIds.map { monsterId -> MonsterManager.getMonster(monsterId) }
             val psiAllowed = it["psiAllowed"].toString().toBoolean()
             val displayOnWorldMap = it["displayOnWorldMap"].toString().toBoolean()
+            val level = it["level"].toString().toInt()
             id to DofusSubArea(
                 id, worldMap, monsters, mapIds, packId, isConquestVillage,
-                associatedZaapMapId, name, area, psiAllowed, displayOnWorldMap
+                associatedZaapMapId, name, area, psiAllowed, displayOnWorldMap, level
             )
         }
     }
