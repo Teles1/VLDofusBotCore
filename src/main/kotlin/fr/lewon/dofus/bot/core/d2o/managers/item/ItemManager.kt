@@ -10,15 +10,14 @@ object ItemManager : VldbManager {
     private lateinit var itemById: Map<Double, DofusItem>
 
     override fun initManager() {
-        val objects = D2OUtil.getObjects("Items")
-        itemById = objects.associate { item ->
-            val id = item["id"].toString().toDouble()
-            val possibleEffects = (item["possibleEffects"] as List<Map<String, Any>>).mapNotNull { possibleEffect ->
-                val effectId = possibleEffect["effectId"].toString().toDouble()
+        itemById = D2OUtil.getObjects("Items").associate {
+            val id = it["id"].toString().toDouble()
+            val possibleEffects = (it["possibleEffects"] as List<Map<String, Any>>).mapNotNull { effect ->
+                val effectId = effect["effectId"].toString().toDouble()
                 val characteristic = EffectManager.getCharacteristicByEffectId(effectId)
-                val min = possibleEffect["diceNum"].toString().toInt()
-                val max = possibleEffect["diceSide"].toString().toInt()
-                characteristic?.let { DofusItemEffect(min, max, it) }
+                val min = effect["diceNum"].toString().toInt()
+                val max = effect["diceSide"].toString().toInt()
+                characteristic?.let { DofusItemEffect(min, max, characteristic) }
             }
             id to DofusItem(id, possibleEffects)
         }

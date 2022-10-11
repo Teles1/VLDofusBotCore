@@ -4,6 +4,7 @@ import fr.lewon.dofus.bot.core.VldbCoreInitializer
 import fr.lewon.dofus.bot.core.d2o.gamedata.GameDataClassDefinition
 import fr.lewon.dofus.bot.core.i18n.I18NUtil
 import fr.lewon.dofus.bot.core.io.stream.ByteArrayReader
+import fr.lewon.dofus.bot.core.utils.LockUtils
 import java.io.File
 import java.util.concurrent.locks.ReentrantLock
 
@@ -27,8 +28,7 @@ object D2OUtil {
     }
 
     fun getObjects(moduleName: String): List<Map<String, Any>> {
-        try {
-            lock.lockInterruptibly()
+        return LockUtils.executeSyncOperation(lock) {
             val stream = streamsByModuleName[moduleName]
                 ?: error("Didn't load stream for module : $moduleName")
             val classes = classesByModuleName[moduleName]
@@ -44,9 +44,7 @@ object D2OUtil {
                 val classDef = classes[stream.readInt()] ?: error("Failed to load class definitions")
                 objects.add(classDef.read(moduleName, stream))
             }
-            return objects
-        } finally {
-            lock.unlock()
+            objects
         }
     }
 

@@ -6,6 +6,7 @@ import fr.lewon.dofus.bot.core.criterion.simple.DofusQuestActiveCriterion
 import fr.lewon.dofus.bot.core.criterion.simple.DofusQuestFinishedCriterion
 import fr.lewon.dofus.bot.core.criterion.simple.DofusQuestObjectiveCriterion
 import fr.lewon.dofus.bot.core.model.charac.DofusCharacterBasicInfo
+import fr.lewon.dofus.bot.core.utils.LockUtils
 import java.util.concurrent.locks.ReentrantLock
 
 object DofusCriterionParser {
@@ -15,13 +16,8 @@ object DofusCriterionParser {
     private val PARSED_CRITERIA_STORE = HashMap<String, DofusCriterion>()
 
     fun parse(criterionStr: String): DofusCriterion {
-        try {
-            LOCK.lockInterruptibly()
-            return PARSED_CRITERIA_STORE.computeIfAbsent(criterionStr) {
-                doParse(criterionStr)
-            }
-        } finally {
-            LOCK.unlock()
+        return LockUtils.executeSyncOperation(LOCK) {
+            PARSED_CRITERIA_STORE.computeIfAbsent(criterionStr) { doParse(criterionStr) }
         }
     }
 

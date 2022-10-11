@@ -9,7 +9,7 @@ class VldbLogger(logItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY) {
     }
 
     private val logs = ArrayBlockingQueue<LogItem>(logItemCapacity)
-    val listeners = ArrayList<VldbLoggerListener>()
+    val listeners = HashSet<VldbLoggerListener>()
 
     private fun onLogsChange() {
         val logsCopy = getLogs()
