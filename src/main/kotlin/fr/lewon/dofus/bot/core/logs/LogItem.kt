@@ -3,23 +3,15 @@ package fr.lewon.dofus.bot.core.logs
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.atomic.AtomicLong
 
-class LogItem(val parent: LogItem?, var message: String, val description: String = "", subItemCapacity: Int) {
+class LogItem(val parent: LogItem?, val message: String, val description: String = "", subItemCapacity: Int) {
 
     companion object {
         private val ID_GENERATOR = AtomicLong(0)
     }
 
     val id = ID_GENERATOR.incrementAndGet()
-
     val subLogs = ArrayBlockingQueue<LogItem>(subItemCapacity)
     var closeMessage: String? = null
-
-    fun getRootLogItem(): LogItem {
-        var parent = this
-        while (true) {
-            parent = parent.parent ?: return parent
-        }
-    }
 
     override fun toString(): String {
         return displayLog(0)

@@ -1,66 +1,45 @@
 package fr.lewon.dofus.bot.core.logs
 
-import java.util.concurrent.ArrayBlockingQueue
+import fr.lewon.dofus.bot.core.utils.LockUtils
+import java.util.concurrent.locks.ReentrantLock
 
-class VldbLogger(logItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY) {
+class VldbLogger {
 
     companion object {
         const val DEFAULT_LOG_ITEM_CAPACITY = 8
     }
 
-    private val logs = ArrayBlockingQueue<LogItem>(logItemCapacity)
     val listeners = HashSet<VldbLoggerListener>()
+    private val lock = ReentrantLock()
 
-    private fun onLogsChange() {
-        val logsCopy = getLogs()
-        listeners.forEach { it.onLogsChange(this, logsCopy) }
-    }
-
-    fun getLogs(): List<LogItem> {
-        return logs.toList()
-    }
-
-    fun clearLogs() {
-        synchronized(logs) {
-            logs.clear()
-            onLogsChange()
-        }
+    private fun getRootLogItem(logItem: LogItem): LogItem {
+        return logItem.parent?.let { getRootLogItem(it) }
+            ?: return logItem
     }
 
     fun closeLog(message: String, parent: LogItem, clearSubLogs: Boolean = false) {
-        synchronized(logs) {
+        return LockUtils.executeSyncOperation(lock) {
             parent.closeMessage = message
             if (clearSubLogs) {
                 parent.subLogs.clear()
             }
-            onLogsChange()
-        }
-    }
-
-    fun appendLog(logItem: LogItem, message: String) {
-        synchronized(logs) {
-            logItem.message += message
-            onLogsChange()
+            onLogUpdated(getRootLogItem(parent))
         }
     }
 
     fun addSubLog(
         message: String, parent: LogItem, subItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY
     ): LogItem {
-        synchronized(logs) {
-            val newItem = LogItem(parent, message, "", subItemCapacity)
-            addSubItem(parent, newItem)
-            val rootLogItem = parent.getRootLogItem()
-            if (!logs.contains(rootLogItem)) {
-                addLogItem(rootLogItem)
+        return LockUtils.executeSyncOperation(lock) {
+            LogItem(parent, message, "", subItemCapacity).also {
+                addSubItem(parent, it)
+                onLogUpdated(getRootLogItem(it))
             }
-            onLogsChange()
-            return newItem
         }
     }
 
     private fun addSubItem(logItem: LogItem, subLogItem: LogItem) {
-        synchronized(logItem.subLogs) {
+        LockUtils.executeSyncOperation(lock) {
             if (!logItem.subLogs.offer(subLogItem)) {
                 logItem.subLogs.poll()
                 logItem.subLogs.offer(subLogItem)
@@ -69,19 +48,13 @@ class VldbLogger(logItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY) {
     }
 
     fun log(message: String, subItemCapacity: Int = DEFAULT_LOG_ITEM_CAPACITY, description: String = ""): LogItem {
-        synchronized(logs) {
-            val newItem = LogItem(null, message, description, subItemCapacity)
-            addLogItem(newItem)
-            onLogsChange()
-            return newItem
+        return LockUtils.executeSyncOperation(lock) {
+            LogItem(null, message, description, subItemCapacity).also { onLogUpdated(it) }
         }
     }
 
-    private fun addLogItem(logItem: LogItem) {
-        if (!logs.offer(logItem)) {
-            logs.poll()
-            logs.offer(logItem)
-        }
+    private fun onLogUpdated(logItem: LogItem) {
+        listeners.forEach { it.onLogUpdated(this, logItem) }
     }
 
 }
