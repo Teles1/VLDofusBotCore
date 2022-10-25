@@ -39,7 +39,13 @@ object SpellLevelManager : VldbManager {
                 val maxCastPerTarget = it["maxCastPerTarget"].toString().toInt()
                 val maxCastPerTurn = it["maxCastPerTurn"].toString().toInt()
                 val forClientOnly = it["forClientOnly"].toString().toBoolean()
+                if (VldbCoreInitializer.DEBUG) {
+                    println("Effects : ")
+                }
                 val effects = parseEffects(it["effects"] as List<Map<String, Any>>?)
+                if (VldbCoreInitializer.DEBUG) {
+                    println("Critical effects : ")
+                }
                 val criticalEffects = parseEffects(it["criticalEffect"] as List<Map<String, Any>>?)
                 id to DofusSpellLevel(
                     id, spellId, criticalHitProbability, needFreeCell, needTakenCell, maxRange, minRange, castInLine,

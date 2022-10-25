@@ -17,7 +17,8 @@ enum class DofusUIElement(
     TREASURE_HUNT("treasureHunt.xml", OverrideType.REPLACE, "treasureHunt", "ctr_hunt"),
     ARENA("pvpArena.xml", OverrideType.REPLACE, "pvpArena", "window\\d"),
     MOUNT_PADDOCK("mountPaddock.xml"),
-    STORAGE("storage.xml");
+    STORAGE("storage.xml"),
+    LVL_UP("LevelUp.xml");
 
     companion object {
         private const val CONTEXT_DEFAULT = "default"

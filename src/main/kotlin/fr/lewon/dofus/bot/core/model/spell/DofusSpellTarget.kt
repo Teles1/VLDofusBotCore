@@ -3,7 +3,7 @@ package fr.lewon.dofus.bot.core.model.spell
 import fr.lewon.dofus.bot.core.VldbCoreInitializer
 import fr.lewon.dofus.bot.core.fighter.IDofusFighter
 
-data class DofusSpellTarget(private val type: DofusSpellTargetType, private val id: Int?) {
+data class DofusSpellTarget(val type: DofusSpellTargetType, private val id: Int?) {
 
     companion object {
         fun fromString(targetMask: String): List<DofusSpellTarget> {

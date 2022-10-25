@@ -6,18 +6,29 @@ import fr.lewon.dofus.bot.core.criterion.simple.DofusQuestActiveCriterion
 import fr.lewon.dofus.bot.core.criterion.simple.DofusQuestFinishedCriterion
 import fr.lewon.dofus.bot.core.criterion.simple.DofusQuestObjectiveCriterion
 import fr.lewon.dofus.bot.core.model.charac.DofusCharacterBasicInfo
-import fr.lewon.dofus.bot.core.utils.LockUtils
+import fr.lewon.dofus.bot.core.utils.LockUtils.executeSyncOperation
 import java.util.concurrent.locks.ReentrantLock
 
 object DofusCriterionParser {
 
-    private val LOCK = ReentrantLock()
-    private val FALSE_CRITERION = DofusFalseCriterion()
-    private val PARSED_CRITERIA_STORE = HashMap<String, DofusCriterion>()
+    private val lock = ReentrantLock()
+    private val falseCriterion = DofusFalseCriterion()
+    private val parsedCriteriaStore = HashMap<String, DofusCriterion>()
+    private val customCriterionBuilderByKey =
+        HashMap<String, (operator: CriterionOperator, expectedValue: String) -> DofusCriterion>()
+
+    fun registerCustomCriterion(
+        criterionStr: String,
+        buildCriterion: (operator: CriterionOperator, expectedValue: String) -> DofusCriterion
+    ) {
+        lock.executeSyncOperation {
+            customCriterionBuilderByKey[criterionStr] = buildCriterion
+        }
+    }
 
     fun parse(criterionStr: String): DofusCriterion {
-        return LockUtils.executeSyncOperation(LOCK) {
-            PARSED_CRITERIA_STORE.computeIfAbsent(criterionStr) { doParse(criterionStr) }
+        return lock.executeSyncOperation {
+            parsedCriteriaStore.computeIfAbsent(criterionStr) { doParse(criterionStr) }
         }
     }
 
@@ -48,7 +59,7 @@ object DofusCriterionParser {
         for (subCriterion in criteria) {
             criterion = criterion?.or(subCriterion) ?: subCriterion
         }
-        return criterion ?: FALSE_CRITERION
+        return criterion ?: falseCriterion
     }
 
     private fun parseCriterionAndBlock(
@@ -63,12 +74,12 @@ object DofusCriterionParser {
         for (subCriterion in criteria) {
             criterion = criterion?.and(subCriterion) ?: subCriterion
         }
-        return criterion ?: FALSE_CRITERION
+        return criterion ?: falseCriterion
     }
 
     private fun parseSimpleCriterion(criterionStr: String): DofusCriterion {
         val operator = CriterionOperator.values().firstOrNull { criterionStr.contains(it.char) }
-            ?: return FALSE_CRITERION
+            ?: return falseCriterion
         val splitCriterionStr = criterionStr.split(operator.char)
         val key = splitCriterionStr[0]
         val expectedValue = splitCriterionStr[1]
@@ -77,8 +88,13 @@ object DofusCriterionParser {
             "Qf" -> DofusQuestFinishedCriterion(expectedValue.toInt())
             "Qa" -> DofusQuestActiveCriterion(expectedValue.toInt())
             "Qo" -> DofusQuestObjectiveCriterion(operator, expectedValue.toInt())
-            else -> FALSE_CRITERION
+            else -> parseCustomCriterion(key, operator, expectedValue)
         }
+    }
+
+    private fun parseCustomCriterion(key: String, operator: CriterionOperator, expectedValue: String): DofusCriterion {
+        return customCriterionBuilderByKey[key]?.invoke(operator, expectedValue)
+            ?: falseCriterion
     }
 
     private class DofusFalseCriterion : DofusCriterion() {

@@ -5,7 +5,6 @@ import fr.lewon.dofus.bot.core.io.stream.ByteArrayReader
 import fr.lewon.dofus.bot.core.model.charac.DofusCharacterBasicInfo
 import fr.lewon.dofus.bot.core.model.maps.DofusMap
 import java.util.*
-import kotlin.collections.ArrayList
 
 object WorldGraphUtil {
 
@@ -14,7 +13,7 @@ object WorldGraphUtil {
     private val outgoingEdges = HashMap<Double, ArrayList<Edge>>()
     private val transitionsByInteractiveId = HashMap<Double, ArrayList<Transition>>()
     private var vertexUid = 0.0
-    private val invalidTransitionIds = ArrayList<Double>()
+    private val invalidInteractiveIds = ArrayList<Double>()
     private val invalidMapIds = ArrayList<Double>()
 
     fun init(stream: ByteArrayReader) {
@@ -44,7 +43,7 @@ object WorldGraphUtil {
         }
     }
 
-    private fun addEdge(from: Vertex, dest: Vertex): Edge {
+    fun addEdge(from: Vertex, dest: Vertex): Edge {
         getEdge(from, dest)?.let { return it }
         val edge = Edge(from, dest)
         val fromEdges = edges.computeIfAbsent(from.uid) { HashMap() }
@@ -111,7 +110,7 @@ object WorldGraphUtil {
     }
 
     private fun isTransitionValid(transition: Transition, characterInfo: DofusCharacterBasicInfo): Boolean {
-        if (invalidTransitionIds.contains(transition.id)) {
+        if (invalidInteractiveIds.contains(transition.id)) {
             return false
         }
         if (transition.type == TransitionType.INTERACTIVE) {
@@ -156,8 +155,8 @@ object WorldGraphUtil {
         }
     }
 
-    fun addInvalidTransitionId(id: Double) {
-        invalidTransitionIds.add(id)
+    fun addInvalidInteractiveId(id: Double) {
+        invalidInteractiveIds.add(id)
     }
 
     fun addInvalidMapId(id: Double) {

@@ -57,9 +57,9 @@ class ByteArrayReader(byteArray: ByteArray) : DataInputStream(ByteArrayStream(by
     private fun readVar(size: Int): Long {
         var ans = 0L
         for (offset in 0 until size step CHUNK_BIT_SIZE) {
-            val b = readUnsignedByte()
-            ans += (b and MASK_01111111) shl offset
-            if (b and MASK_10000000 != MASK_10000000) {
+            val b = readUnsignedByte().toLong()
+            ans += (b and MASK_01111111.toLong()) shl offset
+            if (b and MASK_10000000.toLong() == 0L) {
                 return ans
             }
         }

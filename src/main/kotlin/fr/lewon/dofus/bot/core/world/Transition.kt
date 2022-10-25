@@ -1,6 +1,6 @@
 package fr.lewon.dofus.bot.core.world
 
-data class Transition(
+open class Transition(
     var edge: Edge,
     var direction: Int,
     var type: TransitionType,

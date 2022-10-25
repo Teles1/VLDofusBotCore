@@ -4,28 +4,12 @@ import java.util.concurrent.locks.ReentrantLock
 
 object LockUtils {
 
-    fun executeThreadedSyncOperation(lock: ReentrantLock, operation: () -> Unit) {
+    fun <T> ReentrantLock.executeSyncOperation(operation: () -> T): T {
         try {
-            lock.lockInterruptibly()
-            val condition = lock.newCondition()
-            Thread {
-                executeSyncOperation(lock) {
-                    condition.signal()
-                    operation()
-                }
-            }.start()
-            condition.await()
-        } finally {
-            lock.unlock()
-        }
-    }
-
-    fun <T> executeSyncOperation(lock: ReentrantLock, operation: () -> T): T {
-        try {
-            lock.lockInterruptibly()
+            lockInterruptibly()
             return operation()
         } finally {
-            lock.unlock()
+            unlock()
         }
     }
 

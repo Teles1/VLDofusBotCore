@@ -1,10 +1,8 @@
 package fr.lewon.dofus.bot.core.d2o
 
-import fr.lewon.dofus.bot.core.VldbCoreInitializer
 import fr.lewon.dofus.bot.core.d2o.gamedata.GameDataClassDefinition
-import fr.lewon.dofus.bot.core.i18n.I18NUtil
 import fr.lewon.dofus.bot.core.io.stream.ByteArrayReader
-import fr.lewon.dofus.bot.core.utils.LockUtils
+import fr.lewon.dofus.bot.core.utils.LockUtils.executeSyncOperation
 import java.io.File
 import java.util.concurrent.locks.ReentrantLock
 
@@ -28,7 +26,7 @@ object D2OUtil {
     }
 
     fun getObjects(moduleName: String): List<Map<String, Any>> {
-        return LockUtils.executeSyncOperation(lock) {
+        return lock.executeSyncOperation {
             val stream = streamsByModuleName[moduleName]
                 ?: error("Didn't load stream for module : $moduleName")
             val classes = classesByModuleName[moduleName]
@@ -98,13 +96,4 @@ object D2OUtil {
         classes[classId] = classDef
     }
 
-}
-
-fun main() {
-    VldbCoreInitializer.initAll()
-    D2OUtil.getObjects("SubAreas").forEach {
-        val nameId = it["nameId"].toString().toInt()
-        val name = I18NUtil.getLabel(nameId)
-        println("$name - $it")
-    }
 }
