@@ -6,7 +6,7 @@ import fr.lewon.dofus.bot.core.ui.xml.containers.Container
 
 enum class DofusUIElement(
     private val xmlFileName: String,
-    private val overrideType: OverrideType = OverrideType.NO_OVERRIDE,
+    private val positionOverrideType: OverrideType = OverrideType.NO_OVERRIDE,
     private val key: String = "NO_OVERRIDE",
     private val ctr: String = "NO_OVERRIDE",
 ) {
@@ -18,7 +18,9 @@ enum class DofusUIElement(
     ARENA("pvpArena.xml", OverrideType.REPLACE, "pvpArena", "window\\d"),
     MOUNT_PADDOCK("mountPaddock.xml"),
     STORAGE("storage.xml"),
-    LVL_UP("LevelUp.xml");
+    LVL_UP("LevelUp.xml"),
+    LVL_UP_WITH_SPELL("LevelUpWithSpell.xml"),
+    LVL_UP_OMEGA("LevelUpOmega.xml");
 
     companion object {
         private const val CONTEXT_DEFAULT = "default"
@@ -53,7 +55,7 @@ enum class DofusUIElement(
         XmlContainerInitializer.initAll(container)
         val overriddenPosition = getUIPoint(buildPosKey(fightContext))
             ?: return container
-        val positionDelta = overrideType.getResultPosition(container.bounds.position, overriddenPosition)
+        val positionDelta = positionOverrideType.getResultPosition(container.bounds.position, overriddenPosition)
             .transpose(container.bounds.position.invert())
         updatePosition(container, positionDelta)
         return container
