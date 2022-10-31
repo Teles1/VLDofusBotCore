@@ -25,12 +25,12 @@ enum class DofusSpellTargetType(
     }),
     WITHOUT_STATE('e', { id, _, target -> id != null && !target.hasState(id) }),
     WITH_STATE('E', { id, _, target -> id != null && target.hasState(id) }),
-    ENEMY_SUMMON('J', { id, caster, target -> id != null && target.getPlayerType() != PlayerType.SIDEKICK && target.getFighterTeamId() != caster.getFighterTeamId() && target.isSummon()}),
-    ALLIED_SUMMON('j', {id, caster, target -> id != null && target.getFighterTeamId() == caster.getFighterTeamId() && target.getPlayerType() != PlayerType.SIDEKICK && target.isSummon()}),
-    ENEMY_PLAYER('L',{id, caster, target -> id != null && target.getFighterTeamId() != caster.getFighterTeamId() && (target.getPlayerType() == PlayerType.HUMAN && !target.isSummon() || target.getPlayerType() == PlayerType.SIDEKICK)}),
-    ALLIED_PLAYER('l',{id, caster, target -> id != null && target.getFighterTeamId() == caster.getFighterTeamId() && (target.getPlayerType() == PlayerType.HUMAN && !target.isSummon() || target.getPlayerType() == PlayerType.SIDEKICK)}),
-    NON_HUMAN_NON_SUMMON_ALLY('m',{id, caster, target -> id != null && target.getFighterTeamId() == caster.getFighterTeamId() && target.getPlayerType() != PlayerType.HUMAN && !target.isSummon() && !target.isStaticElement()}),
-    NON_HUMAN_NON_SUMMON_ENEMY('M',{id, caster, target -> id != null && target.getFighterTeamId() != caster.getFighterTeamId() && target.getPlayerType() != PlayerType.HUMAN && !target.isSummon() && !target.isStaticElement()})
+    ENEMY_SUMMON('J', { _, caster, target -> target.getPlayerType() != PlayerType.SIDEKICK && target.getFighterTeamId() != caster.getFighterTeamId() && target.isSummon()}),
+    ALLIED_SUMMON('j', {_, caster, target -> target.getFighterTeamId() == caster.getFighterTeamId() && target.getPlayerType() != PlayerType.SIDEKICK && target.isSummon()}),
+    ENEMY_PLAYER('L',{ _, caster, target -> target.getFighterTeamId() != caster.getFighterTeamId() && (target.getPlayerType() == PlayerType.HUMAN && !target.isSummon() || target.getPlayerType() == PlayerType.SIDEKICK) }),
+    ALLIED_PLAYER('l',{_, caster, target -> target.getFighterTeamId() == caster.getFighterTeamId() && (target.getPlayerType() == PlayerType.HUMAN && !target.isSummon() || target.getPlayerType() == PlayerType.SIDEKICK)}),
+    NON_HUMAN_NON_SUMMON_ALLY('m',{_, caster, target -> target.getFighterTeamId() == caster.getFighterTeamId() && target.getPlayerType() != PlayerType.HUMAN && !target.isSummon() && !target.isStaticElement()}),
+    NON_HUMAN_NON_SUMMON_ENEMY('M',{_, caster, target -> target.getFighterTeamId() != caster.getFighterTeamId() && target.getPlayerType() != PlayerType.HUMAN && !target.isSummon() && !target.isStaticElement()})
     ;
 
     companion object {
